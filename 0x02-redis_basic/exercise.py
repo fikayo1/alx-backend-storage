@@ -20,7 +20,7 @@ class Cache():
         self._redis.set(str(key), data)
         return str(key)
 
-    def get(self, key: str, fn: Union[Callable, None]) -> Union[int, float, str, bytes, None]:
+    def get(self, key: str, fn: Union[Callable, None] = None) -> Union[int, float, str, bytes, None]:
         """A method to retrieve data from redis"""
         if fn is None:
             return self._redis.get(key)
