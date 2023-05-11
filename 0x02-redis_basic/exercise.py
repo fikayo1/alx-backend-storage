@@ -6,7 +6,20 @@ import redis
 import uuid
 from typing import Union
 from typing import Callable
+from functools import wraps
 
+
+def count_calls(method: Callable) -> Callable:
+    """A decorator for counting calls"""
+    @wraps(method)
+    def new_method(self, *args, **kwds):
+        """A method that does all previous plus count calls"""
+        self._redis.incr(method.__qualname__)
+        return method(self, *args, **kwds)
+    return new_method
+
+
+    key = method.__qualname__
 class Cache():
     """ A redis client instance"""
     def __init__(self) -> None:
@@ -14,6 +27,7 @@ class Cache():
         self._redis.flushdb()
 
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """A method to store data in redis"""
         key = uuid.uuid4()
