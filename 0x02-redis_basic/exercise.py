@@ -31,13 +31,11 @@ def count_calls(method: Callable) -> Callable:
     return new_method
 
 
-    key = method.__qualname__
 class Cache():
     """ A redis client instance"""
     def __init__(self) -> None:
         self._redis = redis.Redis()
         self._redis.flushdb()
-
 
     @count_calls
     @call_history
@@ -47,12 +45,11 @@ class Cache():
         self._redis.set(str(key), data)
         return str(key)
 
-    def get(self, key: str, fn: Union[Callable, None] = None) -> Union[int, float, str, bytes, None]:
+    def get(self, key: str, fn: Union[Callable, None] = None) -> any:
         """A method to retrieve data from redis"""
         if fn is None:
             return self._redis.get(key)
         return fn(self._redis.get(key))
-
 
     def get_int(self, key: str) -> int:
         """Get an integer from the cache."""
@@ -79,8 +76,8 @@ def replay(func: Callable) -> None:
             cache.lrange(name + ":inputs", 0, -1),
             cache.lrange(name + ":outputs", 0, -1)
     ):
+        inn = inp.decode("utf-8")
+        out = outp.decode("utf-8")
         print("{}(*{}) -> {}".format(
-            name,
-            inp.decode("utf-8"),
-            outp.decode("utf-8")
+            name, inn, out
         ))
