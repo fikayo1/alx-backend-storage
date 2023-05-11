@@ -9,6 +9,18 @@ from typing import Callable
 from functools import wraps
 
 
+def call_history(method: Callable) -> Callable:
+    """Decorate a function to keep its call history."""
+    @wraps(method)
+    def new_method(self, *args):
+        """Do the same thing as previous method but also record history."""
+        self._redis.rpush(method.__qualname__ + ":inputs", str(args))
+        res = method(self, *args)
+        self._redis.rpush(method.__qualname__ + ":outputs", res)
+        return res
+    return new_method
+
+
 def count_calls(method: Callable) -> Callable:
     """A decorator for counting calls"""
     @wraps(method)
@@ -28,6 +40,7 @@ class Cache():
 
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """A method to store data in redis"""
         key = uuid.uuid4()
